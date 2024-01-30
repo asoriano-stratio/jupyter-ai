@@ -8,6 +8,9 @@ node_modules/
 .ipynb_checkpoints
 *.tsbuildinfo
 
+# User-specific stuff:
+.idea
+
 # Integration tests
 ui-tests/test-results/
 ui-tests/playwright-report/

@@ -1,0 +1,14 @@
+name: stratio-jupyter-ai
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python=3.9.16
+  - nodejs=18.16.*
+  - pip=21.2.4
+  - pip:
+      - build==1.0.3
+      - hatch==1.8.1
+      - jupyterlab~=4.0
