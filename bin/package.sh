@@ -12,3 +12,7 @@ python -m build
 echo "=> Packaging jupyter-ai"
 cd "$BASEDIR"/packages/jupyter-ai
 python -m build
+
+echo "=> Packaging intell-genai"
+cd "$BASEDIR"/packages/intell-genai
+python -m build

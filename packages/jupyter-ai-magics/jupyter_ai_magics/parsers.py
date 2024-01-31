@@ -117,7 +117,9 @@ def verify_json_value(ctx, param, value):
 
 
 @click.command()
-@click.argument("model_id")
+# <intell-change> Use stratio as default provider ...
+@click.argument("model_id", default="stratio_genai")
+# ... <intell-change>
 @click.option(
     "-f",
     "--format",

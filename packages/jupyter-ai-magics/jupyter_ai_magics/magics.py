@@ -11,11 +11,11 @@ import click
 from IPython import get_ipython
 from IPython.core.magic import Magics, line_cell_magic, magics_class
 from IPython.display import HTML, JSON, Markdown, Math
-from jupyter_ai_magics.aliases import MODEL_ID_ALIASES
-from jupyter_ai_magics.utils import decompose_model_id, get_lm_providers
 from langchain.chains import LLMChain
 from langchain.schema import HumanMessage
 
+from jupyter_ai_magics.utils import decompose_model_id, get_lm_providers
+from .intell.genai_chain_base import BaseStratioGenAIChain
 from .parsers import (
     CellArgs,
     DeleteArgs,
@@ -140,10 +140,26 @@ class AiMagics(Magics):
             "show full tracebacks.",
         )
 
-        self.providers = get_lm_providers()
+        # <intell-change> allow list of providers ...
+        allowed_providers = ["stratio_genai_provider"]
+        extra_providers = os.environ.get("INTELL_GENAI_JUPYTER_AI_EXTRA_PROVIDERS", None)
+        if extra_providers:
+            extra_providers_list = [x.strip() for x in extra_providers.split(",")]
+            allowed_providers.extend(extra_providers_list)
 
+        self.providers = get_lm_providers(
+            restrictions={
+                "allowed_providers": allowed_providers,
+                "blocked_providers": []
+            }
+        )
+        # ... <intell-change>
+
+        # <intell-change> new aliases and custom commands ...
         # initialize a registry of custom model/chain names
-        self.custom_model_registry = MODEL_ID_ALIASES
+        from jupyter_ai_magics.aliases import INTELL_MODEL_ID_ALIASES
+        self.custom_model_registry = INTELL_MODEL_ID_ALIASES
+        # ... <intell-change>
 
     def _ai_bulleted_list_models_for_provider(self, provider_id, Provider):
         output = ""
@@ -477,15 +493,18 @@ class AiMagics(Magics):
     def run_ai_cell(self, args: CellArgs, prompt: str):
         provider_id, local_model_id = self._decompose_model_id(args.model_id)
 
-        # If this is a custom chain, send the message to the custom chain.
-        if args.model_id in self.custom_model_registry and isinstance(
-            self.custom_model_registry[args.model_id], LLMChain
-        ):
-            return self.display_output(
-                self.custom_model_registry[args.model_id].run(prompt),
-                args.format,
-                {"jupyter_ai": {"custom_chain_id": args.model_id}},
-            )
+        # <intell-change> New instance for calling to Stratio GenAI API chains ...
+        # If this is a custom chain (local or external in Stratio GenAI), send the message to the custom chain.
+        if args.model_id in self.custom_model_registry:
+            is_local_custom_chain = isinstance(self.custom_model_registry[args.model_id], LLMChain)
+            is_external_chain     = isinstance(self.custom_model_registry[args.model_id], BaseStratioGenAIChain)
+            if is_local_custom_chain or is_external_chain:
+                return self.display_output(
+                    output=self.custom_model_registry[args.model_id].run(prompt),
+                    display_format=args.format,
+                    md={"jupyter_ai": {"custom_chain_id": args.model_id}},
+                )
+        # ... <intell-change>
 
         Provider = self._get_provider(provider_id)
         if Provider is None:
@@ -561,7 +580,11 @@ class AiMagics(Magics):
     def ai(self, line, cell=None):
         raw_args = line.split(" ")
         if cell:
+            # <intell-change> Use stratio as default provider ...
             args = cell_magic_parser(raw_args, prog_name="%%ai", standalone_mode=False)
+            if not args.model_id:  # empty model_id
+                args.model_id = "stratio_genai_provider:none"
+            # ... <intell-change>
         else:
             args = line_magic_parser(raw_args, prog_name="%ai", standalone_mode=False)
 

@@ -15,5 +15,11 @@ deploy:
 test:
 	bin/test.sh
 
+playground-up:
+	bin/playground-up.sh
+
+playground-down:
+	bin/playground-down.sh
+
 clean:
 	bin/clean.sh

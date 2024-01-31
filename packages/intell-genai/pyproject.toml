@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "intell_genai"
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "intell_genai._version.__version__"}
+
+[project.entry-points."jupyter_ai.model_providers"]
+stratio-genai-provider = "intell_genai.jupyter_ai.stratio_genai_provider.provider:StratioGenAIProvider"
+
+[project.entry-points."jupyter_ai.chat_handlers"]
+joke = "intell_genai.jupyter_ai.slash_cmd.joke_slash_cmd:JokeChatHandler"

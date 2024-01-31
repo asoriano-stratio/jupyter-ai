@@ -34,3 +34,9 @@ rm -rf "$BASEDIR"/packages/jupyter-ai/dist
 
 echo "Cleaning /packages/jupyter-ai-magics/dist"
 rm -rf "$BASEDIR"/packages/jupyter-ai-magics/dist
+
+echo "Cleaning /packages/intell-genai/dist"
+rm -rf "$BASEDIR"/packages/intell-genai/dist
+
+echo "Cleaning /packages/intell-genai/intell_genai.egg-info"
+rm -rf "$BASEDIR"/packages/intell-genai/intell_genai.egg-info
